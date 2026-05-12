@@ -17,15 +17,11 @@ export class ProductsController {
     return this.productsService.create(createProductDto);
   }
 
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('admin', 'staff', 'customer')
   @Get()
   findAll() {
     return this.productsService.findAll();
   }
 
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('admin', 'staff', 'customer')
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.productsService.findOne(id);
