@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react';
-import { ShoppingCart, Search, User, Zap, Star } from 'lucide-react';
+import { ShoppingCart, Search, User, Zap } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
 import '../index.css';
 
-// Fallback images matching the ones from the mock data based on names
 const getFallbackImage = (name: string) => {
+  if (!name) return 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&q=80&w=500&h=500';
   if (name.includes('Controller')) return 'https://images.unsplash.com/photo-1600080972464-8e5f35f63d08?auto=format&fit=crop&q=80&w=500&h=500';
   if (name.includes('VR')) return 'https://images.unsplash.com/photo-1622979135225-d2ba269cf1ac?auto=format&fit=crop&q=80&w=500&h=500';
   if (name.includes('Keyboard')) return 'https://images.unsplash.com/photo-1595225476474-87563907a212?auto=format&fit=crop&q=80&w=500&h=500';
@@ -13,7 +13,7 @@ const getFallbackImage = (name: string) => {
   return 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?auto=format&fit=crop&q=80&w=500&h=500';
 }
 
-export default function Storefront() {
+export default function Catalog() {
   const [products, setProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -42,8 +42,8 @@ export default function Storefront() {
           </Link>
           
           <div className="nav-links">
-            <Link to="/" className="nav-item active">Home</Link>
-            <Link to="/catalog" className="nav-item">Catalog</Link>
+            <Link to="/" className="nav-item">Home</Link>
+            <Link to="/catalog" className="nav-item active">Catalog</Link>
             <Link to="/admin" className="nav-item">Admin Dashboard</Link>
           </div>
 
@@ -58,50 +58,41 @@ export default function Storefront() {
         </div>
       </nav>
 
-      <main className="container">
-        <section className="hero">
-          <h1>Experience the <span className="text-gradient">Future</span> of Tech</h1>
-          <p>Discover premium gadgets designed with cutting-edge technology and unparalleled aesthetics. Elevate your setup today.</p>
-          <button className="btn btn-primary" style={{marginTop: '1rem'}}>
-            <Star size={18} fill="currentColor" />
-            Shop Latest Collection
-          </button>
-        </section>
+      <main className="container" style={{ padding: '4rem 2rem' }}>
+        <div style={{ marginBottom: '3rem', textAlign: 'center' }}>
+          <h1 style={{ fontSize: '3.5rem', marginBottom: '1rem' }} className="text-gradient">All Products</h1>
+          <p style={{ color: 'var(--text-muted)', fontSize: '1.2rem', maxWidth: '600px', margin: '0 auto' }}>
+            Browse our complete collection of premium tech gadgets and accessories.
+          </p>
+        </div>
 
-        <section className="products-section">
-          <h2 className="section-title">
-            Trending Now
-            <Link to="/catalog" className="btn btn-icon" style={{background: 'rgba(255,255,255,0.05)', fontSize: '1rem', padding: '0.5rem 1.5rem', borderRadius: 20, textDecoration: 'none'}}>View All</Link>
-          </h2>
-          
-          {loading ? (
-            <div className="loading">Loading products...</div>
-          ) : (
-            <div className="grid">
-              {products.map((product) => (
-                <div key={product.id} className="product-card glass">
-                  <Link to={`/product/${product.id}`} className="product-image-wrap" style={{ display: 'block' }}>
-                    <img src={getFallbackImage(product.name)} alt={product.name} className="product-image" />
-                  </Link>
-                  <div className="product-info">
-                    <div>
-                      <div className="product-category">{product.category?.name || 'GADGETS'}</div>
-                      <Link to={`/product/${product.id}`} style={{ textDecoration: 'none' }}>
-                        <h3 className="product-title">{product.name}</h3>
-                      </Link>
-                    </div>
-                    <div className="product-footer">
-                      <div className="product-price">${product.price.toFixed(2)}</div>
-                      <button className="add-to-cart">
-                        <ShoppingCart size={20} />
-                      </button>
-                    </div>
+        {loading ? (
+          <div className="loading">Loading catalog...</div>
+        ) : (
+          <div className="grid">
+            {products.map((product) => (
+              <div key={product.id} className="product-card glass">
+                <Link to={`/product/${product.id}`} className="product-image-wrap" style={{ display: 'block' }}>
+                  <img src={getFallbackImage(product.name)} alt={product.name} className="product-image" />
+                </Link>
+                <div className="product-info">
+                  <div>
+                    <div className="product-category">{product.category?.name || 'GADGETS'}</div>
+                    <Link to={`/product/${product.id}`} style={{ textDecoration: 'none' }}>
+                      <h3 className="product-title">{product.name}</h3>
+                    </Link>
+                  </div>
+                  <div className="product-footer">
+                    <div className="product-price">${product.price.toFixed(2)}</div>
+                    <button className="add-to-cart">
+                      <ShoppingCart size={20} />
+                    </button>
                   </div>
                 </div>
-              ))}
-            </div>
-          )}
-        </section>
+              </div>
+            ))}
+          </div>
+        )}
       </main>
     </div>
   );

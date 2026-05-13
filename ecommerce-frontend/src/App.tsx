@@ -1,5 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Storefront from './pages/Storefront';
+import ProductDetail from './pages/ProductDetail';
+import Catalog from './pages/Catalog';
 import AdminLayout from './pages/AdminLayout';
 import Dashboard from './pages/Dashboard';
 import ProductsAdmin from './pages/ProductsAdmin';
@@ -22,6 +24,8 @@ function App() {
       <Routes>
         {/* Customer Storefront */}
         <Route path="/" element={<Storefront />} />
+        <Route path="/product/:id" element={<ProductDetail />} />
+        <Route path="/catalog" element={<Catalog />} />
         
         {/* Admin Login */}
         <Route path="/login" element={<Login />} />
