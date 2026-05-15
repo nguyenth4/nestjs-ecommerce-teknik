@@ -30,7 +30,7 @@ export default function ProductsAdmin() {
     try {
       const [productsRes, categoriesRes] = await Promise.all([
         axios.get('http://localhost:3000/products'),
-        axios.get('http://localhost:3000/products/categories')
+        axios.get('http://localhost:3000/categories')
       ]);
       setProducts(productsRes.data);
       setCategories(categoriesRes.data);

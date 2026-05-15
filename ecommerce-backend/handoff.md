@@ -31,11 +31,12 @@ Dự án nằm trong thư mục cha `d:\Code\teknik\nestjs-ecommerce-teknik` (ho
 - [x] **CartModule:** JWT — `GET /cart`, `POST /cart/items`, `PATCH /cart/items/:itemId`, `DELETE /cart/items/:itemId`, `DELETE /cart`. Decorator `@CurrentUser()`.
 - [x] **OrdersModule:**  
   - `POST /orders/checkout`: transaction Prisma — trừ tồn kho có điều kiện, tạo đơn trạng thái **`pending`**, xóa giỏ.  
-  - Sau transaction: enqueue BullMQ — job **`order-email`** (log server mô phỏng email), job **`order-expire`** (delay `ORDER_PENDING_EXPIRE_MS`, mặc định 24h) — nếu vẫn `pending` thì **hủy đơn + hoàn kho**.  
+  - Sau transaction: enqueue BullMQ — job **`order-email`** (SMTP hoặc log nếu chưa cấu hình mail), job **`order-expire`** (delay `ORDER_PENDING_EXPIRE_MS`, mặc định 24h) — nếu vẫn `pending` thì **hủy đơn + hoàn kho**.  
   - `GET /orders`, `GET /orders/:id` (chủ đơn).  
   - **Admin:** `GET /orders/admin/list`, `PATCH /orders/admin/:id/status` (role `admin`/`staff`); khi `pending` → `cancelled` thì **hoàn kho**.  
 - [x] **WebSocket:** `OrdersGateway` namespace **`/orders`**, xác thực JWT (handshake `auth.token` hoặc header `Authorization`), room `user:{userId}`, emit **`order:status`** khi đổi trạng thái hoặc job hủy đơn.
 - [x] **BullMQ:** `BullModule.forRootAsync` trong `AppModule`, queue `orders`, processor `OrdersQueueProcessor`.
+- [x] **Email đặt hàng (SMTP):** `MailModule` / `MailService` dùng **nodemailer**; job BullMQ `order-email` gửi mail HTML xác nhận khi `MAIL_ENABLED=true` và đủ biến SMTP; nếu không thì fallback ghi log.
 - [x] **Docker:** `Dockerfile` multi-stage + `.dockerignore` trong `ecommerce-backend`.
 - [x] **Test (một phần):** `products.service.spec.ts`, `orders.service.spec.ts` có mock Prisma/Redis/Queue; các spec Auth/Users cũ có thể vẫn thiếu mock — cần dọn dẹp khi rảnh.
 
@@ -61,7 +62,7 @@ Dự án nằm trong thư mục cha `d:\Code\teknik\nestjs-ecommerce-teknik` (ho
 ### Backend
 
 1. `docker compose up -d` (Postgres + **Redis** — **bắt buộc** cho cache, BullMQ, WS worker).  
-2. `.env`: `DATABASE_URL`, `JWT_SECRET` (tuỳ chọn), `REDIS_HOST`, `REDIS_PORT`, `ORDER_PENDING_EXPIRE_MS` (tuỳ chọn, ví dụ `10000` để test hủy đơn sau 10 giây).  
+2. `.env`: `DATABASE_URL`, `JWT_SECRET` (tuỳ chọn), `REDIS_HOST`, `REDIS_PORT`, `ORDER_PENDING_EXPIRE_MS` (tuỳ chọn, ví dụ `10000` để test hủy đơn sau 10 giây). **Email đặt hàng (tuỳ chọn):** `MAIL_ENABLED=true`, `SMTP_HOST`, `SMTP_PORT` (mặc định `587`), `SMTP_USER`, `SMTP_PASSWORD`, tuỳ chọn `MAIL_FROM`, `SMTP_SECURE=true` (ví dụ cổng 465). Nếu không bật hoặc thiếu SMTP, job `order-email` chỉ ghi log.  
 3. `npx prisma migrate deploy` hoặc `db push` + seed tùy quy trình team.  
 4. `npm run start:dev` — API mặc định `http://localhost:3000`.
 
@@ -81,7 +82,7 @@ Dự án nằm trong thư mục cha `d:\Code\teknik\nestjs-ecommerce-teknik` (ho
 
 ### Sản phẩm & vận hành
 
-- [ ] Gửi email thật (SMTP / provider) thay cho log trong processor `order-email`.
+- [x] Gửi email thật (SMTP / provider) thay cho log trong processor `order-email` — bật qua `MAIL_ENABLED` + biến `SMTP_*` (xem §3).
 - [ ] Cổng thanh toán: giữ `pending` cho tới khi thanh toán thành công, rồi chuyển `paid` (webhook).
 - [ ] Admin: trang Categories/Users thay placeholder; quyền chi tiết (staff vs admin) cho từng hành động.
 

@@ -3,6 +3,7 @@ import { Logger } from '@nestjs/common';
 import { Job } from 'bullmq';
 import { PrismaService } from '../../prisma/prisma.service';
 import { OrdersGateway } from './orders.gateway';
+import { MailService } from '../../mail/mail.service';
 
 export type OrderQueuePayload = { orderId: string };
 
@@ -13,6 +14,7 @@ export class OrdersQueueProcessor extends WorkerHost {
   constructor(
     private readonly prisma: PrismaService,
     private readonly ordersGateway: OrdersGateway,
+    private readonly mailService: MailService,
   ) {
     super();
   }
@@ -34,9 +36,18 @@ export class OrdersQueueProcessor extends WorkerHost {
       include: { user: { select: { email: true, fullName: true } }, items: true },
     });
     if (!order) return;
-    this.logger.log(
-      `[order-email] Xác nhận đơn ${orderId} tới ${order.user.email} (${order.user.fullName}) — ${order.items.length} dòng, tổng ${order.totalAmount}`,
-    );
+    await this.mailService.sendOrderConfirmation({
+      to: order.user.email,
+      recipientName: order.user.fullName,
+      orderId: order.id,
+      status: order.status,
+      totalAmount: order.totalAmount,
+      items: order.items.map((i) => ({
+        name: i.name,
+        quantity: i.quantity,
+        price: i.price,
+      })),
+    });
   }
 
   private async expireIfStillPending(orderId: string): Promise<void> {

@@ -41,6 +41,23 @@ npm run dev
 
 ---
 
+## 📧 Email xác nhận đơn hàng (SMTP — tùy chọn)
+
+Sau khi khách **đặt hàng**, backend enqueue job `order-email`. Mặc định hệ thống **chỉ ghi log** trong console. Để **gửi email thật**, thêm vào file `.env` trong `ecommerce-backend`:
+
+| Biến | Ý nghĩa |
+|------|---------|
+| `MAIL_ENABLED` | Đặt `true` để bật gửi SMTP |
+| `SMTP_HOST` | Máy chủ SMTP (ví dụ `smtp.gmail.com`) |
+| `SMTP_PORT` | Cổng, thường `587` (STARTTLS) hoặc `465` (SSL) |
+| `SMTP_SECURE` | `true` nếu dùng SSL trực tiếp (thường với cổng 465) |
+| `SMTP_USER` / `SMTP_PASSWORD` | Tài khoản đăng nhập SMTP (với Gmail nên dùng **App Password**) |
+| `MAIL_FROM` | Địa chỉ người gửi hiển thị (mặc định lấy `SMTP_USER`) |
+
+Khởi động lại `npm run start:dev` sau khi sửa `.env`. Nếu gửi lỗi, xem log NestJS (job không làm crash server).
+
+---
+
 ## 🛠 Lệnh Phụ Trợ (Tùy chọn)
 
 Nếu bạn muốn xem, thêm, sửa, hoặc xoá trực tiếp dữ liệu trong Database (như bảng Sản phẩm, User, Đơn hàng), hãy mở thêm một Terminal và chạy:

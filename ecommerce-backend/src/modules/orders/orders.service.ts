@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  ConflictException,
   ForbiddenException,
   Injectable,
   NotFoundException,
@@ -10,6 +11,8 @@ import { Queue } from 'bullmq';
 import { PrismaService } from '../../prisma/prisma.service';
 import { OrdersGateway } from './orders.gateway';
 import { UpdateOrderStatusDto } from './dto/update-order-status.dto';
+import { assertOrderTransition } from './order-status.util';
+import { AuditLogService } from '../../audit/audit-log.service';
 
 @Injectable()
 export class OrdersService {
@@ -18,9 +21,23 @@ export class OrdersService {
     private readonly config: ConfigService,
     private readonly ordersGateway: OrdersGateway,
     @InjectQueue('orders') private readonly ordersQueue: Queue,
+    private readonly auditLog: AuditLogService,
   ) {}
 
-  async checkout(userId: string) {
+  async checkout(userId: string, idempotencyKey?: string) {
+    if (idempotencyKey) {
+      const existing = await this.prisma.order.findUnique({
+        where: { idempotencyKey },
+        include: { items: true },
+      });
+      if (existing) {
+        if (existing.userId !== userId) {
+          throw new ConflictException('Idempotency key already used');
+        }
+        return existing;
+      }
+    }
+
     const order = await this.prisma.$transaction(async (tx) => {
       const cart = await tx.cart.findUnique({
         where: { userId },
@@ -57,9 +74,7 @@ export class OrdersService {
             data: { quantity: { decrement: line.quantity } },
           });
           if (updated.count !== 1) {
-            throw new BadRequestException(
-              `Insufficient stock for "${line.product.name}"`,
-            );
+            throw new BadRequestException(`Insufficient stock for "${line.product.name}"`);
           }
         }
       }
@@ -74,6 +89,7 @@ export class OrdersService {
           userId,
           status: 'pending',
           totalAmount,
+          idempotencyKey: idempotencyKey || undefined,
           items: {
             create: cart.items.map((line) => ({
               productId: line.productId,
@@ -135,7 +151,12 @@ export class OrdersService {
     return order;
   }
 
-  async updateStatusForAdmin(orderId: string, dto: UpdateOrderStatusDto, actorRole: string) {
+  async updateStatusForAdmin(
+    orderId: string,
+    dto: UpdateOrderStatusDto,
+    actorRole: string,
+    actorId: string,
+  ) {
     if (!['admin', 'staff'].includes(actorRole)) {
       throw new ForbiddenException();
     }
@@ -155,8 +176,10 @@ export class OrdersService {
       return order;
     }
 
+    assertOrderTransition(prev, next);
+
     await this.prisma.$transaction(async (tx) => {
-      if (prev === 'pending' && next === 'cancelled') {
+      if (next === 'cancelled' && prev !== 'cancelled' && prev !== 'refunded') {
         for (const item of order.items) {
           const inv = await tx.inventory.findUnique({ where: { productId: item.productId } });
           if (inv) {
@@ -182,6 +205,11 @@ export class OrdersService {
     this.ordersGateway.emitOrderStatus(order.userId, {
       orderId,
       status: next,
+    });
+
+    await this.auditLog.log(actorId, 'order_status_change', 'Order', orderId, {
+      from: prev,
+      to: next,
     });
 
     return fresh;

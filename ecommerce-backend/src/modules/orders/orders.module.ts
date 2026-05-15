@@ -20,6 +20,6 @@ import { OrdersQueueProcessor } from './orders-queue.processor';
   ],
   controllers: [OrdersController],
   providers: [OrdersService, OrdersGateway, OrdersQueueProcessor],
-  exports: [OrdersService],
+  exports: [OrdersService, OrdersGateway],
 })
 export class OrdersModule {}

@@ -21,6 +21,8 @@ export default function OrderDetail() {
   const { id } = useParams<{ id: string }>();
   const [order, setOrder] = useState<OrderRow | null>(null);
   const [err, setErr] = useState('');
+  const [payBusy, setPayBusy] = useState(false);
+  const [payNote, setPayNote] = useState<string | null>(null);
 
   useEffect(() => {
     const t = getStoreAuthToken();
@@ -64,6 +66,43 @@ export default function OrderDetail() {
     };
   }, [id]);
 
+  const mapOrder = (raw: OrderRow): OrderRow => ({
+    id: raw.id,
+    status: raw.status,
+    totalAmount: raw.totalAmount,
+    createdAt: raw.createdAt,
+    items: raw.items.map((it) => ({
+      id: it.id,
+      name: it.name,
+      price: it.price,
+      quantity: it.quantity,
+    })),
+  });
+
+  const runMockPay = async (succeed: boolean) => {
+    const t = getStoreAuthToken();
+    if (!order || !t) return;
+    setPayBusy(true);
+    setPayNote(null);
+    try {
+      const { data } = await axios.post<{ order: OrderRow; status: string }>(
+        `${API}/payments/mock`,
+        { orderId: order.id, succeed },
+        { headers: { Authorization: `Bearer ${t}` } },
+      );
+      if (data?.order) setOrder(mapOrder(data.order));
+    } catch (e) {
+      if (axios.isAxiosError(e)) {
+        const msg = e.response?.data?.message;
+        setPayNote(typeof msg === 'string' ? msg : 'Thanh toán giả thất bại.');
+      } else {
+        setPayNote('Thanh toán giả thất bại.');
+      }
+    } finally {
+      setPayBusy(false);
+    }
+  };
+
   return (
     <div className="app-wrapper">
       <StoreNav />
@@ -103,6 +142,30 @@ export default function OrderDetail() {
               <span>Tổng</span>
               <span>{formatPrice(order.totalAmount)}</span>
             </div>
+
+            {order.status === 'pending' && (
+              <div style={{ marginTop: '1.25rem' }}>
+                <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', marginBottom: '0.5rem' }}>Thanh toán giả lập (PDF N3-T07)</p>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+                  <button type="button" className="btn btn-primary" disabled={payBusy} onClick={() => runMockPay(true)}>
+                    {payBusy ? 'Đang xử lý…' : 'Giả lập: thành công'}
+                  </button>
+                  <button
+                    type="button"
+                    className="btn"
+                    style={{ border: '1px solid var(--glass-border)' }}
+                    disabled={payBusy}
+                    onClick={() => runMockPay(false)}
+                  >
+                    Giả lập: thất bại
+                  </button>
+                </div>
+              </div>
+            )}
+            {payNote && (
+              <p style={{ color: '#fca5a5', fontSize: '0.9rem', marginTop: '0.75rem' }}>{payNote}</p>
+            )}
+
             <Link to="/" className="btn btn-primary" style={{ marginTop: '1.5rem', display: 'inline-flex', textDecoration: 'none' }}>
               Về trang chủ
             </Link>

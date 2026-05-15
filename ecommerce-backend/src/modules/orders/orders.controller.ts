@@ -2,12 +2,14 @@ import {
   Body,
   Controller,
   Get,
+  Headers,
   Param,
   ParseUUIDPipe,
   Patch,
   Post,
   UseGuards,
 } from '@nestjs/common';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { OrdersService } from './orders.service';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../../common/guards/roles.guard';
@@ -15,14 +17,20 @@ import { Roles } from '../../common/decorators/roles.decorator';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { UpdateOrderStatusDto } from './dto/update-order-status.dto';
 
+@ApiTags('orders')
+@ApiBearerAuth('access-token')
 @Controller('orders')
 @UseGuards(JwtAuthGuard)
 export class OrdersController {
   constructor(private readonly ordersService: OrdersService) {}
 
   @Post('checkout')
-  checkout(@CurrentUser() user: { id: string }) {
-    return this.ordersService.checkout(user.id);
+  checkout(
+    @CurrentUser() user: { id: string },
+    @Headers('idempotency-key') idempotencyKey?: string,
+  ) {
+    const key = idempotencyKey?.trim() || undefined;
+    return this.ordersService.checkout(user.id, key);
   }
 
   @UseGuards(RolesGuard)
@@ -38,10 +46,10 @@ export class OrdersController {
   updateStatusAdmin(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: UpdateOrderStatusDto,
-    @CurrentUser() user: { role?: { name: string } },
+    @CurrentUser() user: { id: string; role?: { name: string } },
   ) {
     const role = user.role?.name ?? '';
-    return this.ordersService.updateStatusForAdmin(id, dto, role);
+    return this.ordersService.updateStatusForAdmin(id, dto, role, user.id);
   }
 
   @Get()

@@ -11,6 +11,7 @@ export function setCustomerToken(token: string) {
 
 export function clearCustomerToken() {
   localStorage.removeItem(CUSTOMER_KEY);
+  localStorage.removeItem('customerRefreshToken');
 }
 
 export function hasCustomerSession(): boolean {

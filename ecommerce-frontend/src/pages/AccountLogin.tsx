@@ -25,11 +25,13 @@ export default function AccountLogin() {
         password,
       });
       const token = response.data.access_token as string | undefined;
+      const refresh = response.data.refresh_token as string | undefined;
       if (!token) {
         setError('Không nhận được token từ máy chủ.');
         return;
       }
       setCustomerToken(token);
+      if (refresh) localStorage.setItem('customerRefreshToken', refresh);
       notifyStoreAuthChanged();
       navigate(from, { replace: true });
     } catch (err: unknown) {

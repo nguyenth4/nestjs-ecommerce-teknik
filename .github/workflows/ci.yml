@@ -1,0 +1,25 @@
+name: CI
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Backend — install, Prisma client, build
+        working-directory: ecommerce-backend
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:5432/ci?schema=public
+        run: npm ci && npx prisma generate && npm run build
+
+      - name: Frontend — install & build
+        working-directory: ecommerce-frontend
+        run: npm ci && npm run build

@@ -4,28 +4,30 @@ import { PrismaService } from '../../prisma/prisma.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { REDIS } from '../../redis/redis.module';
-
-const LIST_KEY = 'products:list';
-const CATEGORIES_KEY = 'products:categories';
-const LIST_TTL_SEC = 60;
-const CATEGORIES_TTL_SEC = 300;
+import {
+  CATEGORY_LIST_CACHE_KEY,
+  PRODUCT_LIST_CACHE_KEY,
+  PRODUCT_LIST_TTL_SEC,
+} from '../../common/cache-keys';
+import { AuditLogService } from '../../audit/audit-log.service';
 
 @Injectable()
 export class ProductsService {
   constructor(
     private prisma: PrismaService,
     @Inject(REDIS) private readonly redis: Redis,
+    private readonly auditLog: AuditLogService,
   ) {}
 
   private async invalidateCaches() {
     try {
-      await this.redis.del(LIST_KEY, CATEGORIES_KEY);
+      await this.redis.del(PRODUCT_LIST_CACHE_KEY, CATEGORY_LIST_CACHE_KEY);
     } catch {
       /* ignore cache errors */
     }
   }
 
-  async create(createProductDto: CreateProductDto) {
+  async create(createProductDto: CreateProductDto, actorId: string) {
     let sku = createProductDto.sku;
     if (!sku || sku.trim() === '') {
       sku = `SKU-${Date.now().toString().slice(-6)}`;
@@ -43,6 +45,7 @@ export class ProductsService {
         include: { category: true, inventory: true },
       });
       await this.invalidateCaches();
+      await this.auditLog.log(actorId, 'create', 'Product', created.id, { sku: created.sku, name: created.name });
       return created;
     } catch (error: any) {
       if (error.code === 'P2002') {
@@ -54,7 +57,7 @@ export class ProductsService {
 
   async findAll() {
     try {
-      const cached = await this.redis.get(LIST_KEY);
+      const cached = await this.redis.get(PRODUCT_LIST_CACHE_KEY);
       if (cached) {
         return JSON.parse(cached);
       }
@@ -68,7 +71,7 @@ export class ProductsService {
     });
 
     try {
-      await this.redis.set(LIST_KEY, JSON.stringify(rows), 'EX', LIST_TTL_SEC);
+      await this.redis.set(PRODUCT_LIST_CACHE_KEY, JSON.stringify(rows), 'EX', PRODUCT_LIST_TTL_SEC);
     } catch {
       /* ignore */
     }
@@ -87,7 +90,7 @@ export class ProductsService {
     return product;
   }
 
-  async update(id: string, updateProductDto: UpdateProductDto) {
+  async update(id: string, updateProductDto: UpdateProductDto, actorId: string) {
     await this.findOne(id);
     try {
       const updated = await this.prisma.product.update({
@@ -95,6 +98,7 @@ export class ProductsService {
         data: updateProductDto,
       });
       await this.invalidateCaches();
+      await this.auditLog.log(actorId, 'update', 'Product', id, { fields: Object.keys(updateProductDto) });
       return updated;
     } catch (error: any) {
       if (error.code === 'P2002') {
@@ -104,35 +108,13 @@ export class ProductsService {
     }
   }
 
-  async remove(id: string) {
+  async remove(id: string, actorId: string) {
     await this.findOne(id);
     const removed = await this.prisma.product.delete({
       where: { id },
     });
     await this.invalidateCaches();
+    await this.auditLog.log(actorId, 'delete', 'Product', id, { sku: removed.sku });
     return removed;
-  }
-
-  async getCategories() {
-    try {
-      const cached = await this.redis.get(CATEGORIES_KEY);
-      if (cached) {
-        return JSON.parse(cached);
-      }
-    } catch {
-      /* fall through */
-    }
-
-    const rows = await this.prisma.category.findMany({
-      where: { isActive: true },
-    });
-
-    try {
-      await this.redis.set(CATEGORIES_KEY, JSON.stringify(rows), 'EX', CATEGORIES_TTL_SEC);
-    } catch {
-      /* ignore */
-    }
-
-    return rows;
   }
 }

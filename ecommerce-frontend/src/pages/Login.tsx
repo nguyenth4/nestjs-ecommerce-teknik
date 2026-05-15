@@ -24,8 +24,10 @@ export default function Login() {
 
       // Backend returns { access_token: "..." }
       const token = response.data.access_token;
+      const refresh = response.data.refresh_token as string | undefined;
       if (token) {
         localStorage.setItem('adminToken', token);
+        if (refresh) localStorage.setItem('adminRefreshToken', refresh);
         navigate('/admin');
       } else {
         setError('No access token received from server.');
