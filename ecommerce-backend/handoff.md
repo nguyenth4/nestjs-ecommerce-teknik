@@ -47,7 +47,14 @@ Dự án nằm trong thư mục cha `d:\Code\teknik\nestjs-ecommerce-teknik` (ho
 - [x] **Email đặt hàng (SMTP):** `MailModule` / `MailService` dùng **nodemailer**; job BullMQ `order-email` gửi mail HTML xác nhận khi `MAIL_ENABLED=true` và đủ biến SMTP; nếu không thì fallback ghi log.
 - [x] **Docker:** `Dockerfile` multi-stage + `.dockerignore` trong `ecommerce-backend`.
 - [x] **Users Admin API:** `GET /users/admin/list`, `GET /users/admin/roles`, `PATCH /users/admin/:id/status`, `PATCH /users/admin/:id/role` (role `admin`/`staff`).
-- [x] **Test (một phần):** `products.service.spec.ts`, `orders.service.spec.ts` có mock Prisma/Redis/Queue; các spec Auth/Users cũ có thể vẫn thiếu mock — cần dọn dẹp khi rảnh.
+- [x] **Unit test: 8/8 suites, 22/22 tests ✅** — mọi spec đều có mock đầy đủ, chạy `npm test` xanh toàn bộ:
+  - `prisma.service.spec` — test class shape (không kết nối DB thật)
+  - `auth.service.spec` — mock UsersService, JwtService, PrismaService, ConfigService; test `issueTokens`, `validateUser`
+  - `auth.controller.spec` — mock AuthService; test login (valid/invalid), register
+  - `products.service.spec` — mock Prisma, Redis, AuditLogService; test cache hit/miss
+  - `products.controller.spec` — mock ProductsService; test findAll, findOne
+  - `orders.service.spec` — mock Prisma, ConfigService, OrdersGateway, BullMQ, AuditLogService
+  - `users.service.spec` — mock PrismaService; test findByEmail, findAllAdmin, findAllRoles
 
 ### 2.3. Frontend (React)
 
@@ -107,13 +114,14 @@ Dự án nằm trong thư mục cha `d:\Code\teknik\nestjs-ecommerce-teknik` (ho
 - [x] Gửi email thật (SMTP / provider) thay cho log trong processor `order-email` — bật qua `MAIL_ENABLED` + biến `SMTP_*` (xem §3).
 - [x] **Admin Categories/Users:** trang quản lý đầy đủ thay placeholder; phân quyền `admin`/`staff` đúng theo từng hành động.
 - [x] **Dashboard Observability:** live stats + System Health (DB/Redis) thay số hardcode.
+- [x] **Unit test:** `npm test` — **8/8 suites, 22/22 tests** xanh ✅.
 - [ ] Cổng thanh toán: giữ `pending` cho tới khi thanh toán thành công, rồi chuyển `paid` (webhook) — cần xác định provider (VNPay/Stripe/MoMo).
 
 ### Chất lượng & triển khai
 
 - [ ] **E2E:** `AppModule` + Redis (Testcontainers hoặc CI service) — hiện `test:e2e` có thể fail nếu không có Redis.
-- [ ] **Unit test:** Sửa/bổ sung mock cho `auth`, `users`, `cart`… để `npm test` xanh toàn bộ.
-- [ ] **Observability:** Bull Board / metrics, health check Redis + DB.
+- [x] **Unit test:** 8/8 suites, 22/22 tests ✅ — `npm test` xanh toàn bộ.
+- [ ] **Observability nâng cao:** Bull Board / metrics endpoint.
 
 ### Kiến trúc nâng cao (tùy nhu cầu)
 
