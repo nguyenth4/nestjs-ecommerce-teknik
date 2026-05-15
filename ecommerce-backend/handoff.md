@@ -3,13 +3,15 @@
 **Ngày cập nhật:** 15/05/2026  
 **Mô tả:** Tài liệu bàn giao dự án hệ thống E-commerce (Backend NestJS + Frontend React), hạ tầng Docker, Redis, BullMQ và WebSocket. Dùng để tiếp tục phát triển hoặc bàn giao cho team khác.
 
+> **[15/05/2026] Nâng cấp Prisma ORM v5 → v7.8.0** — xem chi tiết tại §2.1.
+
 ---
 
 ## 1. Tổng quan kiến trúc (Architecture)
 
 Dự án nằm trong thư mục cha `d:\Code\teknik\nestjs-ecommerce-teknik` (hoặc clone từ GitHub):
 
-*   **Backend (`/ecommerce-backend`):** **NestJS v11**, **TypeScript**, **Prisma ORM v5**, **PostgreSQL**, **Redis** (cache + BullMQ + tùy chọn WebSocket adapter), **Socket.IO** cho namespace đơn hàng. Repo tham chiếu: `https://github.com/nguyenth4/nestjs-ecommerce-teknik.git`.
+*   **Backend (`/ecommerce-backend`):** **NestJS v11**, **TypeScript**, **Prisma ORM v7** (v7.8.0), **PostgreSQL**, **Redis** (cache + BullMQ + tùy chọn WebSocket adapter), **Socket.IO** cho namespace đơn hàng. Repo tham chiếu: `https://github.com/nguyenth4/nestjs-ecommerce-teknik.git`.
 *   **Frontend (`/ecommerce-frontend`):** **Vite + React + TypeScript**, CSS thuần (Glassmorphism, Dark Theme), **Context API** cho giỏ hàng, **socket.io-client** cho cập nhật trạng thái đơn realtime.
 
 ---
@@ -22,6 +24,12 @@ Dự án nằm trong thư mục cha `d:\Code\teknik\nestjs-ecommerce-teknik` (ho
 - [x] `.env`: `DATABASE_URL` (bắt buộc); Redis qua `REDIS_HOST` / `REDIS_PORT` (mặc định `localhost` / `6379`).
 - [x] Prisma schema đầy đủ (`User`, `Role`, `Product`, `Category`, `Inventory`, `Cart`, `CartItem`, `Order`, `OrderItem`, `AuditLog`).
 - [x] Seed: `prisma/seed.ts` (sản phẩm + inventory mẫu), `prisma/admin-seed.ts` (admin + role).
+- [x] **Prisma v7 — cấu hình mới:**
+  - `prisma.config.ts` (root backend): chứa `datasource.url` thay vì `schema.prisma` (yêu cầu bắt buộc của Prisma v7.8+).
+  - `prisma/schema.prisma`: `datasource db` **không có** `url` (đã chuyển sang `prisma.config.ts`).
+  - Prisma Client được generate vào `src/generated/prisma/` (không còn trong `node_modules`).
+  - `PrismaService` dùng `@prisma/adapter-pg` (`PrismaPg`) để kết nối DB.
+  - **Sau mỗi lần sửa schema:** chạy `npx prisma generate` để cập nhật client.
 
 ### 2.2. Backend (NestJS)
 
@@ -63,8 +71,9 @@ Dự án nằm trong thư mục cha `d:\Code\teknik\nestjs-ecommerce-teknik` (ho
 
 1. `docker compose up -d` (Postgres + **Redis** — **bắt buộc** cho cache, BullMQ, WS worker).  
 2. `.env`: `DATABASE_URL`, `JWT_SECRET` (tuỳ chọn), `REDIS_HOST`, `REDIS_PORT`, `ORDER_PENDING_EXPIRE_MS` (tuỳ chọn, ví dụ `10000` để test hủy đơn sau 10 giây). **Email đặt hàng (tuỳ chọn):** `MAIL_ENABLED=true`, `SMTP_HOST`, `SMTP_PORT` (mặc định `587`), `SMTP_USER`, `SMTP_PASSWORD`, tuỳ chọn `MAIL_FROM`, `SMTP_SECURE=true` (ví dụ cổng 465). Nếu không bật hoặc thiếu SMTP, job `order-email` chỉ ghi log.  
-3. `npx prisma migrate deploy` hoặc `db push` + seed tùy quy trình team.  
-4. `npm run start:dev` — API mặc định `http://localhost:3000`.
+3. `npx prisma generate` — generate Prisma Client vào `src/generated/prisma/` (**bắt buộc** sau khi clone hoặc thay đổi schema).  
+4. `npx prisma migrate deploy` hoặc `npx prisma db push` + seed tùy quy trình team.  
+5. `npm run start:dev` — API mặc định `http://localhost:3000`.
 
 ### Frontend
 
@@ -75,6 +84,15 @@ Dự án nằm trong thư mục cha `d:\Code\teknik\nestjs-ecommerce-teknik` (ho
 ### Prisma Studio
 
 - Trong thư mục backend: `npx prisma studio` → `http://localhost:5555`.
+
+### Lưu ý Prisma v7
+
+| File | Vai trò |
+|---|---|
+| `prisma.config.ts` | Cấu hình DB URL, schema path (dùng cho CLI) |
+| `prisma/schema.prisma` | Models, relations, generator output path |
+| `src/generated/prisma/` | Prisma Client được generate — **không commit** (có trong `.gitignore`) |
+| `src/prisma/prisma.service.ts` | Dùng `PrismaPg` adapter từ `@prisma/adapter-pg` |
 
 ---
 
