@@ -46,6 +46,7 @@ Dự án nằm trong thư mục cha `d:\Code\teknik\nestjs-ecommerce-teknik` (ho
 - [x] **BullMQ:** `BullModule.forRootAsync` trong `AppModule`, queue `orders`, processor `OrdersQueueProcessor`.
 - [x] **Email đặt hàng (SMTP):** `MailModule` / `MailService` dùng **nodemailer**; job BullMQ `order-email` gửi mail HTML xác nhận khi `MAIL_ENABLED=true` và đủ biến SMTP; nếu không thì fallback ghi log.
 - [x] **Docker:** `Dockerfile` multi-stage + `.dockerignore` trong `ecommerce-backend`.
+- [x] **Users Admin API:** `GET /users/admin/list`, `GET /users/admin/roles`, `PATCH /users/admin/:id/status`, `PATCH /users/admin/:id/role` (role `admin`/`staff`).
 - [x] **Test (một phần):** `products.service.spec.ts`, `orders.service.spec.ts` có mock Prisma/Redis/Queue; các spec Auth/Users cũ có thể vẫn thiếu mock — cần dọn dẹp khi rảnh.
 
 ### 2.3. Frontend (React)
@@ -54,6 +55,9 @@ Dự án nằm trong thư mục cha `d:\Code\teknik\nestjs-ecommerce-teknik` (ho
 - [x] **StoreNav**, **CartProvider** (`useCart`), token khách `customerToken` + fallback `adminToken` (dev).
 - [x] Trang: `/account/login`, `/account/register`, `/cart`, `/checkout`, `/orders/:id`; thêm giỏ từ Home / Catalog / Product detail.
 - [x] **Admin:** Login, layout, Products; **Orders** (`/admin/orders`): bảng đơn, đổi trạng thái, WebSocket cập nhật danh sách.
+- [x] **Admin Categories** (`/admin/categories`): CRUD đầy đủ — bảng danh sách, modal thêm/sửa (auto-slug), toggle active, xóa có guard.
+- [x] **Admin Users** (`/admin/users`): bảng users với avatar initials, dropdown đổi role và status inline, nút block/unblock.
+- [x] **Dashboard thực tế:** Fetch live data (revenue, orders, users, products, categories, pending orders) + System Health badge (DB/Redis UP/DOWN).
 - [x] Trang chi tiết đơn khách: lắng nghe `order:status` qua Socket.IO.
 
 ---
@@ -101,8 +105,9 @@ Dự án nằm trong thư mục cha `d:\Code\teknik\nestjs-ecommerce-teknik` (ho
 ### Sản phẩm & vận hành
 
 - [x] Gửi email thật (SMTP / provider) thay cho log trong processor `order-email` — bật qua `MAIL_ENABLED` + biến `SMTP_*` (xem §3).
-- [ ] Cổng thanh toán: giữ `pending` cho tới khi thanh toán thành công, rồi chuyển `paid` (webhook).
-- [ ] Admin: trang Categories/Users thay placeholder; quyền chi tiết (staff vs admin) cho từng hành động.
+- [x] **Admin Categories/Users:** trang quản lý đầy đủ thay placeholder; phân quyền `admin`/`staff` đúng theo từng hành động.
+- [x] **Dashboard Observability:** live stats + System Health (DB/Redis) thay số hardcode.
+- [ ] Cổng thanh toán: giữ `pending` cho tới khi thanh toán thành công, rồi chuyển `paid` (webhook) — cần xác định provider (VNPay/Stripe/MoMo).
 
 ### Chất lượng & triển khai
 
