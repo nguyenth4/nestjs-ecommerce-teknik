@@ -31,9 +31,10 @@ model Role {
 model Product {
   id            String    @id @default(uuid())
   name          String
-  sku           String    @unique
+  sku           String?   @unique
   price         Float
   status        String    @default("active") // active, inactive
+  imageUrl      String?
   categoryId    String
   category      Category  @relation(fields: [categoryId], references: [id])
   inventory     Inventory?

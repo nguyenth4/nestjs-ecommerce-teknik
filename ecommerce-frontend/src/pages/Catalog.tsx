@@ -1,7 +1,10 @@
 import { useEffect, useState } from 'react';
-import { ShoppingCart, Search, User, Zap } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { ShoppingCart } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { formatPrice } from '../utils/formatters';
+import StoreNav from '../components/StoreNav';
+import { useCart } from '../context/CartContext';
 import '../index.css';
 
 const getFallbackImage = (name: string) => {
@@ -16,6 +19,8 @@ const getFallbackImage = (name: string) => {
 export default function Catalog() {
   const [products, setProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const { addToCart } = useCart();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -32,32 +37,19 @@ export default function Catalog() {
     fetchProducts();
   }, []);
 
+  const handleQuickAdd = async (e: React.MouseEvent, productId: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    try {
+      await addToCart(productId, 1);
+    } catch {
+      navigate('/account/login', { state: { from: '/catalog' } });
+    }
+  };
+
   return (
     <div className="app-wrapper">
-      <nav className="navbar">
-        <div className="container nav-container">
-          <Link to="/" className="nav-logo">
-            <Zap className="text-gradient" size={28} />
-            <span>Teknix<span className="text-gradient">Store</span></span>
-          </Link>
-          
-          <div className="nav-links">
-            <Link to="/" className="nav-item">Home</Link>
-            <Link to="/catalog" className="nav-item active">Catalog</Link>
-            <Link to="/admin" className="nav-item">Admin Dashboard</Link>
-          </div>
-
-          <div className="nav-actions">
-            <button className="btn-icon"><Search size={20} /></button>
-            <button className="btn-icon"><User size={20} /></button>
-            <button className="btn-icon" style={{position: 'relative'}}>
-              <ShoppingCart size={20} />
-              <span style={{position: 'absolute', top: 0, right: 0, background: 'var(--primary)', fontSize: '0.6rem', width: 14, height: 14, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', color: 'white'}}>3</span>
-            </button>
-          </div>
-        </div>
-      </nav>
-
+      <StoreNav />
       <main className="container" style={{ padding: '4rem 2rem' }}>
         <div style={{ marginBottom: '3rem', textAlign: 'center' }}>
           <h1 style={{ fontSize: '3.5rem', marginBottom: '1rem' }} className="text-gradient">All Products</h1>
@@ -73,7 +65,7 @@ export default function Catalog() {
             {products.map((product) => (
               <div key={product.id} className="product-card glass">
                 <Link to={`/product/${product.id}`} className="product-image-wrap" style={{ display: 'block' }}>
-                  <img src={getFallbackImage(product.name)} alt={product.name} className="product-image" />
+                  <img src={product.imageUrl || getFallbackImage(product.name)} alt={product.name} className="product-image" />
                 </Link>
                 <div className="product-info">
                   <div>
@@ -83,8 +75,17 @@ export default function Catalog() {
                     </Link>
                   </div>
                   <div className="product-footer">
-                    <div className="product-price">${product.price.toFixed(2)}</div>
-                    <button className="add-to-cart">
+                    <div className="product-price" style={{ color: !product.price ? '#f87171' : undefined }}>
+                      {formatPrice(product.price)}
+                    </div>
+                    <button
+                      type="button"
+                      className="add-to-cart"
+                      disabled={!product.price}
+                      style={{ opacity: !product.price ? 0.5 : 1, cursor: !product.price ? 'not-allowed' : 'pointer' }}
+                      title={!product.price ? 'Hết hàng' : 'Add to cart'}
+                      onClick={(e) => void handleQuickAdd(e, product.id)}
+                    >
                       <ShoppingCart size={20} />
                     </button>
                   </div>

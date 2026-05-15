@@ -1,7 +1,10 @@
 import { useEffect, useState } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
-import { ArrowLeft, ShoppingCart, Minus, Plus, Zap, Search, User } from 'lucide-react';
+import { ArrowLeft, ShoppingCart, Minus, Plus } from 'lucide-react';
+import { formatPrice } from '../utils/formatters';
+import StoreNav from '../components/StoreNav';
+import { useCart } from '../context/CartContext';
 import '../index.css';
 
 // Reuse fallback image logic from Storefront
@@ -17,6 +20,8 @@ const getFallbackImage = (name: string) => {
 export default function ProductDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
+  const { addToCart } = useCart();
   const [product, setProduct] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [quantity, setQuantity] = useState(1);
@@ -46,6 +51,15 @@ export default function ProductDetail() {
     setQuantity(quantity + 1);
   };
 
+  const handleAddToCart = async () => {
+    if (!id || !product?.price) return;
+    try {
+      await addToCart(id, quantity);
+    } catch {
+      navigate('/account/login', { state: { from: location.pathname } });
+    }
+  };
+
   if (loading) {
     return (
       <div className="app-wrapper">
@@ -69,30 +83,7 @@ export default function ProductDetail() {
 
   return (
     <div className="app-wrapper">
-      <nav className="navbar">
-        <div className="container nav-container">
-          <Link to="/" className="nav-logo">
-            <Zap className="text-gradient" size={28} />
-            <span>Teknix<span className="text-gradient">Store</span></span>
-          </Link>
-          
-          <div className="nav-links">
-            <Link to="/" className="nav-item">Home</Link>
-            <Link to="/catalog" className="nav-item">Catalog</Link>
-            <Link to="/admin" className="nav-item">Admin Dashboard</Link>
-          </div>
-
-          <div className="nav-actions">
-            <button className="btn-icon"><Search size={20} /></button>
-            <button className="btn-icon"><User size={20} /></button>
-            <button className="btn-icon" style={{position: 'relative'}}>
-              <ShoppingCart size={20} />
-              <span style={{position: 'absolute', top: 0, right: 0, background: 'var(--primary)', fontSize: '0.6rem', width: 14, height: 14, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', color: 'white'}}>3</span>
-            </button>
-          </div>
-        </div>
-      </nav>
-
+      <StoreNav />
       <main className="container">
         <div style={{ marginTop: '2rem' }}>
           <button onClick={() => navigate(-1)} className="btn btn-icon" style={{ display: 'inline-flex', gap: '0.5rem', background: 'rgba(255,255,255,0.05)', padding: '0.5rem 1rem', borderRadius: '8px' }}>
@@ -104,7 +95,7 @@ export default function ProductDetail() {
           {/* Image Column */}
           <div className="glass product-detail-image-wrap">
             <img 
-              src={getFallbackImage(product.name)} 
+              src={product.imageUrl || getFallbackImage(product.name)} 
               alt={product.name} 
               className="product-detail-image" 
             />
@@ -118,8 +109,8 @@ export default function ProductDetail() {
             
             <h1 className="product-detail-title">{product.name}</h1>
             
-            <div className="product-detail-price">
-              ${product.price.toFixed(2)}
+            <div className="product-detail-price" style={{ color: !product.price ? '#f87171' : undefined }}>
+              {formatPrice(product.price)}
               <span className="product-detail-sku">SKU: {product.sku || 'N/A'}</span>
             </div>
             
@@ -136,17 +127,28 @@ export default function ProductDetail() {
                 <button className="quantity-btn" onClick={handleIncrease}><Plus size={18} /></button>
               </div>
               
-              <button className="btn btn-primary btn-lg" style={{ flex: 1, justifyContent: 'center' }}>
+              <button
+                type="button"
+                className="btn btn-primary btn-lg"
+                style={{
+                  flex: 1,
+                  justifyContent: 'center',
+                  opacity: !product.price ? 0.5 : 1,
+                  cursor: !product.price ? 'not-allowed' : 'pointer',
+                }}
+                disabled={!product.price}
+                onClick={() => void handleAddToCart()}
+              >
                 <ShoppingCart size={20} />
-                Add to Cart
+                {!product.price ? 'Hết hàng' : 'Add to Cart'}
               </button>
             </div>
             
             <div style={{ marginTop: '3rem', paddingTop: '2rem', borderTop: '1px solid var(--glass-border)', display: 'flex', gap: '2rem' }}>
               <div>
                 <strong style={{ color: 'var(--text-main)' }}>Status: </strong>
-                <span style={{ color: product.status === 'active' ? '#10b981' : 'var(--text-muted)' }}>
-                  {product.status === 'active' ? 'In Stock' : 'Out of Stock'}
+                <span style={{ color: product.status === 'active' && product.price > 0 ? '#10b981' : 'var(--text-muted)' }}>
+                  {product.status === 'active' && product.price > 0 ? 'In Stock' : 'Out of Stock'}
                 </span>
               </div>
             </div>

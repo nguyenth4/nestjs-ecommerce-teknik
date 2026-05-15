@@ -42,10 +42,15 @@ async function main() {
   ];
 
   for (const p of products) {
-    await prisma.product.upsert({
+    const product = await prisma.product.upsert({
       where: { sku: p.sku },
       update: {},
       create: p,
+    });
+    await prisma.inventory.upsert({
+      where: { productId: product.id },
+      update: { quantity: 50 },
+      create: { productId: product.id, quantity: 50 },
     });
   }
 
