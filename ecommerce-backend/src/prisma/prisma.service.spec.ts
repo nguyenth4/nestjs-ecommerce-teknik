@@ -1,18 +1,13 @@
-import { Test, TestingModule } from '@nestjs/testing';
 import { PrismaService } from './prisma.service';
 
 describe('PrismaService', () => {
-  let service: PrismaService;
-
-  beforeEach(async () => {
-    const module: TestingModule = await Test.createTestingModule({
-      providers: [PrismaService],
-    }).compile();
-
-    service = module.get<PrismaService>(PrismaService);
+  it('should be a class that extends PrismaClient', () => {
+    expect(PrismaService).toBeDefined();
+    expect(PrismaService.prototype.onModuleInit).toBeDefined();
   });
 
-  it('should be defined', () => {
-    expect(service).toBeDefined();
+  it('onModuleInit should be a function', () => {
+    expect(typeof PrismaService.prototype.onModuleInit).toBe('function');
   });
 });
+

@@ -4,12 +4,14 @@ import { ConfigService } from '@nestjs/config';
 import { OrdersService } from './orders.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import { OrdersGateway } from './orders.gateway';
+import { AuditLogService } from '../../audit/audit-log.service';
 
 describe('OrdersService', () => {
   let service: OrdersService;
   const prismaMock = {} as unknown as PrismaService;
   const queueAdd = jest.fn().mockResolvedValue(undefined);
   const gatewayMock = { emitOrderStatus: jest.fn() };
+  const auditLogMock = { log: jest.fn().mockResolvedValue(undefined) };
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -22,6 +24,7 @@ describe('OrdersService', () => {
         },
         { provide: OrdersGateway, useValue: gatewayMock },
         { provide: getQueueToken('orders'), useValue: { add: queueAdd } },
+        { provide: AuditLogService, useValue: auditLogMock },
       ],
     }).compile();
 
