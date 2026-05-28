@@ -18,25 +18,33 @@ nestjs-teknix/
 
 ### 1. Khởi chạy Backend (NestJS)
 
-Mở một Terminal (Command Prompt / PowerShell) và thực hiện các bước sau:
+Mở một Terminal (Command Prompt / PowerShell) tại thư mục gốc của dự án và thực hiện các bước sau:
 
-**Bước 1.1:** Di chuyển vào thư mục backend
+**Bước 1.1:** Khởi chạy Cơ sở dữ liệu (PostgreSQL)
+Dự án sử dụng PostgreSQL. Bạn cần sử dụng Docker để chạy nhanh DB thông qua Docker Compose:
 ```bash
-cd backend
+docker-compose up -d
 ```
 
-**Bước 1.2:** Cài đặt các gói thư viện phụ thuộc
+**Bước 1.2:** Di chuyển vào thư mục backend và cài đặt thư viện
 ```bash
+cd backend
 npm install
 ```
 
-**Bước 1.3:** Khởi chạy server ở chế độ Development
+**Bước 1.3:** Khởi tạo cấu trúc Database và Dữ liệu mẫu (Migration & Seed)
+```bash
+npx prisma migrate dev
+npx prisma db seed
+```
+
+**Bước 1.4:** Khởi chạy server ở chế độ Development
 ```bash
 npm run start:dev
 ```
 
 *Sau khi chạy thành công, API Server sẽ lắng nghe tại cổng `3000`.*
-* Truy cập API Docs (Swagger): [http://localhost:3000/api/docs](http://localhost:3000/api/docs)
+* Truy cập API Docs (Swagger) để test API: [http://localhost:3000/api/docs](http://localhost:3000/api/docs)
 
 
 ### 2. Khởi chạy Frontend (React + Vite)
@@ -62,18 +70,22 @@ npm run dev
 
 ---
 
-## 🌟 Các tính năng chính (Tuần 1)
+## 🌟 Các tính năng chính
 
 1. **Frontend:**
    - Single Page Application (SPA) với React Router.
    - Giao diện Client (Trang chủ, Sản phẩm, Đơn hàng, v.v).
    - Giao diện Admin Dashboard (Bảng điều khiển độc lập).
 2. **Backend:**
-   - Cấu trúc kiến trúc Feature Module chuẩn.
-   - Các API CRUD có sẵn cho `Product` và `Category`.
+   - Cấu trúc kiến trúc Feature Module chuẩn NestJS.
+   - Cơ sở dữ liệu PostgreSQL quản lý bởi Prisma ORM.
+   - Các API CRUD có sẵn cho `Product`, `Category` và các đối tượng khác.
+   - Hệ thống Xác thực (Auth) bằng JWT Token & Refresh Token.
+   - Phân quyền (RBAC) nghiêm ngặt theo các Role (ADMIN, MANAGER, USER).
+   - Hệ thống tự động ghi nhật ký (Audit Log) các thao tác quản lý dữ liệu.
    - Global Validation bằng DTO (chặn request sai định dạng).
    - Global Response Interceptor & Exception Filter (định dạng trả về đồng nhất).
-   - Swagger API Documentation.
+   - Tài liệu API tương tác trực tiếp qua Swagger UI.
    - Jest Unit Tests.
 
 ---
