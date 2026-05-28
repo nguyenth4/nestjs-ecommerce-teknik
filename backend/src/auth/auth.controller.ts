@@ -42,8 +42,7 @@ export class AuthController {
   @UseGuards(JwtAuthGuard)
   @Get('profile')
   getProfile(@Request() req: any) {
-    // req.user được trích xuất từ JwtStrategy
-    return req.user;
+    return this.authService.getProfile(req.user.userId);
   }
 
   @ApiBearerAuth()

@@ -57,6 +57,31 @@ export class AuthService {
     return this.login(newUser);
   }
 
+  async getProfile(userId: string) {
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        id: true,
+        email: true,
+        firstName: true,
+        lastName: true,
+        role: { select: { name: true } }
+      }
+    });
+    
+    if (!user) {
+      throw new UnauthorizedException('Người dùng không tồn tại');
+    }
+    
+    return {
+      sub: user.id,
+      email: user.email,
+      firstName: user.firstName,
+      lastName: user.lastName,
+      role: user.role.name
+    };
+  }
+
   async refreshToken(token: string) {
     try {
       const payload = await this.jwtService.verifyAsync(token, {

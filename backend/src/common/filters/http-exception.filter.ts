@@ -20,6 +20,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
       error = exceptionResponse.error || exception.name;
     } else if (exception instanceof Error) {
       message = exception.message;
+      error = (exception as any).meta || exception.stack;
     }
 
     response.status(status).json({

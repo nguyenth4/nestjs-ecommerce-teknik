@@ -1,6 +1,14 @@
-import { Outlet, NavLink, Link } from 'react-router-dom';
+import { Outlet, NavLink, Link, Navigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 
 export default function AdminLayout() {
+  const { user, isLoading } = useAuth();
+
+  if (isLoading) return <div>Đang kiểm tra quyền truy cập...</div>;
+  if (!user || (user.role !== 'ADMIN' && user.role !== 'MANAGER')) {
+    return <Navigate to="/login" replace />;
+  }
+
   return (
     <div id="view-admin" className="view active">
       <div className="admin-layout">
@@ -18,6 +26,9 @@ export default function AdminLayout() {
             </NavLink>
             <NavLink to="/admin/categories" className={({ isActive }) => isActive ? "sidebar-item active" : "sidebar-item"}>
               <span className="s-icon">📁</span> Danh mục
+            </NavLink>
+            <NavLink to="/admin/users" className={({ isActive }) => isActive ? "sidebar-item active" : "sidebar-item"}>
+              <span className="s-icon">👥</span> Quản lý Người dùng
             </NavLink>
             <div style={{ marginTop: 'auto', paddingTop: '20px' }}>
               <Link to="/" className="sidebar-item" style={{ color: 'var(--brand)' }}>
