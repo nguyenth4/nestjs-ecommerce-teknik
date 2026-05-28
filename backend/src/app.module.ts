@@ -13,9 +13,10 @@ import { PaymentModule } from './payment/payment.module';
 import { NotificationModule } from './notification/notification.module';
 import { RealtimeModule } from './realtime/realtime.module';
 import { AuditLogModule } from './audit-log/audit-log.module';
+import { PrismaModule } from './prisma/prisma.module';
 
 @Module({
-  imports: [AuthModule, UserModule, RoleModule, ProductModule, CategoryModule, InventoryModule, CartModule, OrderModule, PaymentModule, NotificationModule, RealtimeModule, AuditLogModule],
+  imports: [PrismaModule, AuthModule, UserModule, RoleModule, ProductModule, CategoryModule, InventoryModule, CartModule, OrderModule, PaymentModule, NotificationModule, RealtimeModule, AuditLogModule],
   controllers: [AppController],
   providers: [AppService],
 })
