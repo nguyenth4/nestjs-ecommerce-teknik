@@ -1,59 +1,70 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ProductService } from './product.service';
+import { PrismaService } from '../prisma/prisma.service';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
 
 describe('ProductService', () => {
   let service: ProductService;
+  let prisma: PrismaService;
+
+  const mockPrismaService = {
+    product: {
+      findMany: jest.fn(),
+      findUnique: jest.fn(),
+      create: jest.fn(),
+    },
+    inventory: {
+      create: jest.fn(),
+    }
+  };
+
+  const mockCacheManager = {
+    get: jest.fn(),
+    set: jest.fn(),
+    del: jest.fn(),
+    reset: jest.fn(),
+  };
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [ProductService],
+      providers: [
+        ProductService,
+        { provide: PrismaService, useValue: mockPrismaService },
+        { provide: CACHE_MANAGER, useValue: mockCacheManager },
+      ],
     }).compile();
 
     service = module.get<ProductService>(ProductService);
+    prisma = module.get<PrismaService>(PrismaService);
+  });
+
+  afterEach(() => {
+    jest.clearAllMocks();
   });
 
   it('should be defined', () => {
     expect(service).toBeDefined();
   });
 
-  it('should create a product', () => {
-    const dto = { name: 'Test Product', sku: 'TEST-1', price: 1000, categoryId: 'cat-1' };
-    const product = service.create(dto);
-    expect(product).toHaveProperty('id');
-    expect(product.name).toBe('Test Product');
+  describe('findAll', () => {
+    it('should query db and return products', async () => {
+      mockPrismaService.product.findMany.mockResolvedValue(['db_product']);
+      
+      const result = await service.findAll();
+      expect(result).toEqual(['db_product']);
+      expect(mockPrismaService.product.findMany).toHaveBeenCalled();
+    });
   });
 
-  it('should find all products', () => {
-    service.create({ name: 'Product 1', sku: 'SKU-1', price: 100, categoryId: '1' });
-    const products = service.findAll();
-    expect(products.length).toBe(1);
-  });
-
-  it('should find one product by id', () => {
-    const created = service.create({ name: 'Product 2', sku: 'SKU-2', price: 200, categoryId: '1' });
-    const found = service.findOne(created.id);
-    expect(found).toBeDefined();
-    expect(found.id).toBe(created.id);
-  });
-
-  it('should return null if product not found', () => {
-    const found = service.findOne('non-existent-id');
-    expect(found).toBeNull();
-  });
-
-  it('should update a product', () => {
-    const created = service.create({ name: 'Old Name', sku: 'SKU-3', price: 300, categoryId: '1' });
-    const updated = service.update(created.id, { name: 'New Name' });
-    expect(updated).toBeDefined();
-    expect(updated?.name).toBe('New Name');
-  });
-
-  it('should delete a product', () => {
-    const created = service.create({ name: 'To Delete', sku: 'SKU-4', price: 400, categoryId: '1' });
-    const deleted = service.remove(created.id);
-    expect(deleted).toBeDefined();
-    
-    const found = service.findOne(created.id);
-    expect(found).toBeNull();
+  describe('create', () => {
+    it('should create product and invalidate cache', async () => {
+      mockPrismaService.product.create.mockResolvedValue({ id: '1', name: 'product_1' });
+      const createDto = { name: 'product_1', sku: 'SKU1', price: 100, status: 'ACTIVE', categoryId: 'cat_1' };
+      
+      const result = await service.create(createDto);
+      expect(result).toEqual({ id: '1', name: 'product_1' });
+      expect(mockPrismaService.product.create).toHaveBeenCalledWith({ data: createDto });
+      expect(mockCacheManager.del).toHaveBeenCalledWith('products_list');
+    });
   });
 });

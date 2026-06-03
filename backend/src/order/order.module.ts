@@ -4,6 +4,8 @@ import { OrderService } from './order.service';
 import { BullModule } from '@nestjs/bullmq';
 import { OrderProcessor } from './order.processor';
 
+import { RealtimeModule } from '../realtime/realtime.module';
+
 @Module({
   imports: [
     BullModule.registerQueue({
@@ -12,6 +14,7 @@ import { OrderProcessor } from './order.processor';
     BullModule.registerQueue({
       name: 'notification',
     }),
+    RealtimeModule,
   ],
   controllers: [OrderController],
   providers: [OrderService, OrderProcessor],

@@ -18,6 +18,7 @@ import { CacheModule } from '@nestjs/cache-manager';
 // @ts-ignore
 import * as redisStore from 'cache-manager-redis-store';
 import { BullModule } from '@nestjs/bullmq';
+import { HealthModule } from './health/health.module';
 
 @Module({
   imports: [
@@ -45,7 +46,7 @@ import { BullModule } from '@nestjs/bullmq';
     PaymentModule, 
     NotificationModule, 
     RealtimeModule, 
-    AuditLogModule
+    AuditLogModule, HealthModule
   ],
   controllers: [AppController],
   providers: [AppService],

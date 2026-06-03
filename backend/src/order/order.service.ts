@@ -4,6 +4,7 @@ import { CreateOrderDto } from './dto/create-order.dto';
 import { OrderStatus } from '@prisma/client';
 import { InjectQueue } from '@nestjs/bullmq';
 import { Queue } from 'bullmq';
+import { RealtimeGateway } from '../realtime/realtime.gateway';
 
 @Injectable()
 export class OrderService {
@@ -11,6 +12,7 @@ export class OrderService {
     private prisma: PrismaService,
     @InjectQueue('order') private readonly orderQueue: Queue,
     @InjectQueue('notification') private readonly notificationQueue: Queue,
+    private readonly realtimeGateway: RealtimeGateway,
   ) {}
 
   async createOrder(userId: string, dto: CreateOrderDto) {
@@ -171,6 +173,9 @@ export class OrderService {
     } else if (status === OrderStatus.CANCELLED) {
       this.notificationQueue.add('order.cancelled', { orderId: updatedOrder.id, userId: updatedOrder.userId });
     }
+
+    // Broadcast realtime qua WebSocket
+    this.realtimeGateway.broadcastOrderStatus(updatedOrder.id, status, updatedOrder.userId);
 
     return updatedOrder;
   }

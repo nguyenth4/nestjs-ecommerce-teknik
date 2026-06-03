@@ -21,5 +21,22 @@ services:
       - '6380:6379'
     restart: always
 
+  api:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: shopflow_api
+    environment:
+      - DATABASE_URL=postgresql://postgres:123456@postgres:5432/postgres?schema=public
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - JWT_SECRET=super-secret-key-ecommerce-2026
+    ports:
+      - '3000:3000'
+    depends_on:
+      - postgres
+      - redis
+    restart: always
+
 volumes:
   shopflow_pgdata:
