@@ -51,15 +51,22 @@ Tính năng cốt lõi đã được liên kết hoàn chỉnh từ Frontend xu�
 - **Redis Cache**: Ứng dụng Redis để cache các API lấy danh sách sản phẩm/danh mục nhằm tối ưu tốc độ response.
 - **Background Jobs (BullMQ)**: Xử lý ngầm các tác vụ nặng: Tự động huỷ đơn hàng nếu quá hạn thanh toán (Timeout Job) và Hàng đợi lưu log/thông báo khi trạng thái đơn hàng thay đổi (Notification Queue).
 
+### 2.5. Tuần 4 - Đảm bảo chất lượng & DevOps
+- **Realtime (WebSockets)**: Tích hợp `@nestjs/websockets` và `socket.io`. Tự động thiết lập Socket Rooms theo User ID. Bắn sự kiện cập nhật trạng thái đơn hàng (PAID, CANCELLED) về Frontend một cách realtime (không cần tải lại trang).
+- **Health Check & Monitoring**: Có endpoint `/health` để tự động kiểm tra trạng thái Database và Memory.
+- **Testing**: Đã viết Unit Test đầy đủ cho `AuthService`, `ProductService` và E2E Test cho Backend (PASS 100%). Đảm bảo code không bị lỗi hồi quy.
+- **Docker & CI/CD**: Xây dựng Multi-stage `Dockerfile` tối ưu cho Backend. Mở rộng `docker-compose.yml` để chạy một mạch cả Database, Redis và Backend. Thiết lập thành công luồng CI Pipeline với Github Actions (`.github/workflows/ci.yml`).
+
 ---
 
 ## 3. Hướng dẫn thiết lập và khởi chạy hệ thống
 
-### 3.1. Khởi động Database (PostgreSQL)
-Mở Terminal ở thư mục gốc của dự án và chạy Docker Compose để bật database ở cổng `5433`:
+### 3.1. Khởi động Toàn bộ hệ thống bằng Docker Compose (Khuyên dùng)
+Mở Terminal ở thư mục gốc của dự án và chạy lệnh sau để khởi động đồng thời cả **PostgreSQL**, **Redis** và **Backend API**:
 ```bash
-docker-compose up -d
+docker compose up -d --build
 ```
+*Lưu ý: API sẽ tự động lắng nghe ở cổng `3000`.*
 
 ### 3.2. Khởi chạy Backend (NestJS)
 Mở một Terminal (Command Prompt / PowerShell) và chạy các lệnh sau:
@@ -110,8 +117,6 @@ Hệ thống lõi và các luồng API nghiệp vụ (Cart, Order, Payment) đ�
 1. **Frontend Giỏ hàng & Thanh toán**: Kết nối API Orders/Carts từ Backend lên Frontend, tạo giao diện mua sắm và luồng checkout.
 2. **Dashboard UI**: Trang trí và bổ sung các biểu đồ thống kê đơn hàng cho Admin Dashboard.
 3. **Upload Hình ảnh**: Tích hợp Cloudinary hoặc AWS S3 để upload ảnh thật cho sản phẩm.
-4. **Realtime WebSocket (Tuần 4)**: Cập nhật trạng thái đơn hàng realtime bằng WebSocket.
-5. **Unit Test / E2E Test**: Bổ sung test coverage cho các hàm quan trọng.
 
 ---
 *Bản giao code được biên soạn hoàn thiện, bám sát kiến trúc và thực tế dự án ShopFlow E-commerce.*
