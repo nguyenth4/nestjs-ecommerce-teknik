@@ -63,6 +63,11 @@ Tính năng cốt lõi đã được liên kết hoàn chỉnh từ Frontend xu�
 - **Trang Thanh toán (Checkout)**: Thu thập địa chỉ giao hàng, tạo đơn đặt hàng và gọi API thanh toán giả lập.
 - **Trang Lịch sử đơn hàng (Orders)**: Hiển thị các đơn hàng cá nhân, phân loại trạng thái (PENDING, PAID...) và ghi nhận snapshot giá sản phẩm tại thời điểm mua.
 
+### 2.7. Frontend - Admin Dashboard & Quản lý
+- **Tổng quan (Dashboard)**: Tích hợp API gọi dữ liệu thật, thống kê tổng số lượng đơn hàng và tính toán tổng doanh thu. Hiển thị danh sách 10 đơn hàng gần nhất.
+- **Quản lý Sản phẩm / Danh mục**: Đã thay thế dữ liệu giả lập thành kết nối API hoàn chỉnh, xử lý các thao tác Thêm, Sửa, Xóa thông qua Axios Interceptor (kèm theo hiển thị thông báo lỗi/thành công bằng Toast).
+- **Quản lý Người dùng**: Hiển thị danh sách toàn bộ người dùng và cho phép cấp quyền (Admin/Manager/User) nhanh chóng.
+
 ---
 
 ## 3. Hướng dẫn thiết lập và khởi chạy hệ thống
@@ -120,8 +125,8 @@ Sau khi chạy lệnh `npx prisma db seed`, hệ thống đã có sẵn các tà
 
 ## 5. Các việc cần làm tiếp theo (Next Steps)
 Hệ thống lõi và các luồng API nghiệp vụ (Cart, Order, Payment) đều đã hoàn thiện ở Backend. Team tiếp nhận có thể tiến hành phát triển tiếp các module:
-1. **Dashboard UI**: Trang trí và bổ sung các biểu đồ thống kê đơn hàng cho Admin Dashboard.
-2. **Upload Hình ảnh**: Tích hợp Cloudinary hoặc AWS S3 để upload ảnh thật cho sản phẩm.
+1. **Upload Hình ảnh**: Tích hợp Cloudinary hoặc AWS S3 để upload ảnh thật cho sản phẩm.
+2. **Triển khai Production (Deployment)**: Đưa Frontend lên Vercel/Netlify và Backend lên Render/AWS/DigitalOcean.
 
 ---
 *Bản giao code được biên soạn hoàn thiện, bám sát kiến trúc và thực tế dự án ShopFlow E-commerce.*
