@@ -57,6 +57,12 @@ Tính năng cốt lõi đã được liên kết hoàn chỉnh từ Frontend xu�
 - **Testing**: Đã viết Unit Test đầy đủ cho `AuthService`, `ProductService` và E2E Test cho Backend (PASS 100%). Đảm bảo code không bị lỗi hồi quy.
 - **Docker & CI/CD**: Xây dựng Multi-stage `Dockerfile` tối ưu cho Backend. Mở rộng `docker-compose.yml` để chạy một mạch cả Database, Redis và Backend. Thiết lập thành công luồng CI Pipeline với Github Actions (`.github/workflows/ci.yml`).
 
+### 2.6. Frontend - Luồng mua sắm (Shopping & Checkout)
+- **Trang Sản phẩm (Shop)**: Lấy danh sách sản phẩm từ API và hỗ trợ thêm vào giỏ hàng.
+- **Trang Giỏ hàng (Cart)**: Quản lý giỏ hàng (tăng giảm số lượng, xóa) và tự động tính tổng tiền.
+- **Trang Thanh toán (Checkout)**: Thu thập địa chỉ giao hàng, tạo đơn đặt hàng và gọi API thanh toán giả lập.
+- **Trang Lịch sử đơn hàng (Orders)**: Hiển thị các đơn hàng cá nhân, phân loại trạng thái (PENDING, PAID...) và ghi nhận snapshot giá sản phẩm tại thời điểm mua.
+
 ---
 
 ## 3. Hướng dẫn thiết lập và khởi chạy hệ thống
@@ -114,9 +120,8 @@ Sau khi chạy lệnh `npx prisma db seed`, hệ thống đã có sẵn các tà
 
 ## 5. Các việc cần làm tiếp theo (Next Steps)
 Hệ thống lõi và các luồng API nghiệp vụ (Cart, Order, Payment) đều đã hoàn thiện ở Backend. Team tiếp nhận có thể tiến hành phát triển tiếp các module:
-1. **Frontend Giỏ hàng & Thanh toán**: Kết nối API Orders/Carts từ Backend lên Frontend, tạo giao diện mua sắm và luồng checkout.
-2. **Dashboard UI**: Trang trí và bổ sung các biểu đồ thống kê đơn hàng cho Admin Dashboard.
-3. **Upload Hình ảnh**: Tích hợp Cloudinary hoặc AWS S3 để upload ảnh thật cho sản phẩm.
+1. **Dashboard UI**: Trang trí và bổ sung các biểu đồ thống kê đơn hàng cho Admin Dashboard.
+2. **Upload Hình ảnh**: Tích hợp Cloudinary hoặc AWS S3 để upload ảnh thật cho sản phẩm.
 
 ---
 *Bản giao code được biên soạn hoàn thiện, bám sát kiến trúc và thực tế dự án ShopFlow E-commerce.*
