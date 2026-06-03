@@ -1,4 +1,6 @@
 import { useEffect, useState } from 'react';
+import api from '../../utils/api';
+import toast from 'react-hot-toast';
 
 interface Category {
   id: string;
@@ -15,11 +17,10 @@ export default function Categories() {
 
   const fetchCategories = async () => {
     try {
-      const res = await fetch('http://localhost:3000/categories');
-      const json = await res.json();
-      if (json.success) setCategories(json.data);
+      const res = await api.get('/categories');
+      setCategories(res.data?.data || res.data || []);
     } catch (err) {
-      console.error(err);
+      toast.error('Lỗi tải danh sách danh mục');
     }
   };
 
@@ -30,28 +31,21 @@ export default function Categories() {
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    const url = formData.id ? `http://localhost:3000/categories/${formData.id}` : 'http://localhost:3000/categories';
-    const method = formData.id ? 'PUT' : 'POST';
     
     // Loại bỏ id ra khỏi payload khi POST hoặc PUT
     const { id, ...payload } = formData;
     
     try {
-      const res = await fetch(url, {
-        method,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
-      const json = await res.json();
-      if (json.success) {
-        setIsEditing(false);
-        fetchCategories(); // Tải lại danh sách
+      if (formData.id) {
+        await api.put(`/categories/${formData.id}`, payload);
       } else {
-        alert('Lỗi: ' + JSON.stringify(json.message));
+        await api.post('/categories', payload);
       }
-    } catch (err) {
-      console.error(err);
-      alert('Không thể kết nối đến Backend');
+      setIsEditing(false);
+      toast.success('Lưu danh mục thành công!');
+      fetchCategories();
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || 'Lỗi khi lưu danh mục');
     }
     setLoading(false);
   };
@@ -64,10 +58,11 @@ export default function Categories() {
   const handleDelete = async (id: string) => {
     if (!confirm('Bạn có chắc muốn xóa danh mục này?')) return;
     try {
-      await fetch(`http://localhost:3000/categories/${id}`, { method: 'DELETE' });
+      await api.delete(`/categories/${id}`);
+      toast.success('Xoá danh mục thành công!');
       fetchCategories();
-    } catch (err) {
-      console.error(err);
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || 'Lỗi khi xoá danh mục');
     }
   };
 

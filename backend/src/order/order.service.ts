@@ -120,6 +120,16 @@ export class OrderService {
     });
   }
 
+  async getAllOrders() {
+    return this.prisma.order.findMany({
+      include: { 
+        items: { include: { product: true } },
+        user: { select: { firstName: true, lastName: true, email: true } }
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+
   async updateOrderStatus(orderId: string, status: OrderStatus) {
     const order = await this.prisma.order.findUnique({
       where: { id: orderId },

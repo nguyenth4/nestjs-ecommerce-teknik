@@ -28,6 +28,14 @@ export class OrderController {
     return this.orderService.getUserOrders(user.userId);
   }
 
+  @ApiOperation({ summary: 'Lấy tất cả đơn hàng (Admin)' })
+  @UseGuards(RolesGuard)
+  @Roles(RoleName.ADMIN, RoleName.MANAGER)
+  @Get('all')
+  getAllOrders() {
+    return this.orderService.getAllOrders();
+  }
+
   @ApiOperation({ summary: 'Admin cập nhật trạng thái đơn hàng' })
   @UseGuards(RolesGuard)
   @Roles(RoleName.ADMIN, RoleName.MANAGER)

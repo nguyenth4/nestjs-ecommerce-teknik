@@ -1,4 +1,6 @@
 import { useEffect, useState } from 'react';
+import api from '../../utils/api';
+import toast from 'react-hot-toast';
 
 interface Product {
   id: string;
@@ -17,11 +19,10 @@ export default function Products() {
 
   const fetchProducts = async () => {
     try {
-      const res = await fetch('http://localhost:3000/products');
-      const json = await res.json();
-      if (json.success) setProducts(json.data);
+      const res = await api.get('/products');
+      setProducts(res.data?.data || res.data || []);
     } catch (err) {
-      console.error(err);
+      toast.error('Lỗi tải danh sách sản phẩm');
     }
   };
 
@@ -32,29 +33,22 @@ export default function Products() {
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    const url = formData.id ? `http://localhost:3000/products/${formData.id}` : 'http://localhost:3000/products';
-    const method = formData.id ? 'PUT' : 'POST';
     
     // Loại bỏ id ra khỏi payload khi POST hoặc PUT, chuyển price thành số
     const { id, ...rest } = formData;
     const payload = { ...rest, price: Number(formData.price) };
     
     try {
-      const res = await fetch(url, {
-        method,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
-      const json = await res.json();
-      if (json.success) {
-        setIsEditing(false);
-        fetchProducts(); // Tải lại danh sách
+      if (formData.id) {
+        await api.put(`/products/${formData.id}`, payload);
       } else {
-        alert('Lỗi: ' + JSON.stringify(json.message));
+        await api.post('/products', payload);
       }
-    } catch (err) {
-      console.error(err);
-      alert('Không thể kết nối đến Backend');
+      setIsEditing(false);
+      toast.success('Lưu sản phẩm thành công!');
+      fetchProducts();
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || 'Lỗi khi lưu sản phẩm');
     }
     setLoading(false);
   };
@@ -67,10 +61,11 @@ export default function Products() {
   const handleDelete = async (id: string) => {
     if (!confirm('Bạn có chắc muốn xóa sản phẩm này?')) return;
     try {
-      await fetch(`http://localhost:3000/products/${id}`, { method: 'DELETE' });
+      await api.delete(`/products/${id}`);
+      toast.success('Xoá sản phẩm thành công!');
       fetchProducts();
-    } catch (err) {
-      console.error(err);
+    } catch (err: any) {
+      toast.error(err.response?.data?.message || 'Lỗi khi xoá sản phẩm');
     }
   };
 
