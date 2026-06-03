@@ -12,6 +12,8 @@ import Dashboard from './pages/admin/Dashboard';
 import Products from './pages/admin/Products';
 import Categories from './pages/admin/Categories';
 import Users from './pages/admin/Users';
+import Cart from './pages/client/Cart';
+import Checkout from './pages/client/Checkout';
 
 function App() {
   return (
@@ -21,6 +23,8 @@ function App() {
         <Route path="/" element={<ClientLayout />}>
           <Route index element={<Home />} />
           <Route path="shop" element={<Shop />} />
+          <Route path="cart" element={<Cart />} />
+          <Route path="checkout" element={<Checkout />} />
           <Route path="orders" element={<Orders />} />
           <Route path="profile" element={<Profile />} />
           <Route path="login" element={<Login />} />
