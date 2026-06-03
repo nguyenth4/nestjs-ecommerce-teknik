@@ -14,5 +14,12 @@ services:
       - shopflow_pgdata:/var/lib/postgresql/data
     restart: always
 
+  redis:
+    image: redis:7-alpine
+    container_name: shopflow_redis
+    ports:
+      - '6380:6379'
+    restart: always
+
 volumes:
   shopflow_pgdata:

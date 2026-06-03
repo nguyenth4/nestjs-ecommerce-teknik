@@ -1,11 +1,16 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Inject } from '@nestjs/common';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { PrismaService } from '../prisma/prisma.service';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import type { Cache } from 'cache-manager';
 
 @Injectable()
 export class ProductService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    @Inject(CACHE_MANAGER) private cacheManager: Cache
+  ) {}
 
   async create(createProductDto: CreateProductDto, actorId?: string) {
     const product = await this.prisma.product.create({
@@ -22,6 +27,7 @@ export class ProductService {
         }
       });
     }
+    await this.cacheManager.del('products_list');
     return product;
   }
 
@@ -51,6 +57,7 @@ export class ProductService {
         }
       });
     }
+    await this.cacheManager.del('products_list');
     return product;
   }
 
@@ -69,6 +76,7 @@ export class ProductService {
         }
       });
     }
+    await this.cacheManager.del('products_list');
     return product;
   }
 }

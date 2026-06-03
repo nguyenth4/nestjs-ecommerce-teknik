@@ -14,9 +14,39 @@ import { NotificationModule } from './notification/notification.module';
 import { RealtimeModule } from './realtime/realtime.module';
 import { AuditLogModule } from './audit-log/audit-log.module';
 import { PrismaModule } from './prisma/prisma.module';
+import { CacheModule } from '@nestjs/cache-manager';
+// @ts-ignore
+import * as redisStore from 'cache-manager-redis-store';
+import { BullModule } from '@nestjs/bullmq';
 
 @Module({
-  imports: [PrismaModule, AuthModule, UserModule, RoleModule, ProductModule, CategoryModule, InventoryModule, CartModule, OrderModule, PaymentModule, NotificationModule, RealtimeModule, AuditLogModule],
+  imports: [
+    PrismaModule, 
+    CacheModule.register({
+      isGlobal: true,
+      store: redisStore,
+      host: process.env.REDIS_HOST || 'localhost',
+      port: parseInt(process.env.REDIS_PORT || '6380'),
+    }),
+    BullModule.forRoot({
+      connection: {
+        host: process.env.REDIS_HOST || 'localhost',
+        port: parseInt(process.env.REDIS_PORT || '6380'),
+      },
+    }),
+    AuthModule, 
+    UserModule, 
+    RoleModule, 
+    ProductModule, 
+    CategoryModule, 
+    InventoryModule, 
+    CartModule, 
+    OrderModule, 
+    PaymentModule, 
+    NotificationModule, 
+    RealtimeModule, 
+    AuditLogModule
+  ],
   controllers: [AppController],
   providers: [AppService],
 })

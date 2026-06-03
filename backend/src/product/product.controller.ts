@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Put, Param, Get, Delete, UseGuards, Request } from '@nestjs/common';
+import { Controller, Post, Body, Put, Param, Get, Delete, UseGuards, Request, UseInterceptors } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
@@ -7,6 +7,7 @@ import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
 import { ProductService } from './product.service';
+import { CacheInterceptor, CacheKey } from '@nestjs/cache-manager';
 
 @ApiTags('products')
 @Controller('products')
@@ -21,6 +22,8 @@ export class ProductController {
     return this.productService.create(createProductDto, req.user?.sub);
   }
 
+  @UseInterceptors(CacheInterceptor)
+  @CacheKey('products_list')
   @Get()
   findAll() {
     return this.productService.findAll();

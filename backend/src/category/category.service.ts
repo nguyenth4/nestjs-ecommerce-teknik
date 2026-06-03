@@ -1,41 +1,49 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Inject, NotFoundException } from '@nestjs/common';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
+import { PrismaService } from '../prisma/prisma.service';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import type { Cache } from 'cache-manager';
 
 @Injectable()
 export class CategoryService {
-  private categories: any[] = [];
+  constructor(
+    private readonly prisma: PrismaService,
+    @Inject(CACHE_MANAGER) private cacheManager: Cache
+  ) {}
 
-  create(createCategoryDto: CreateCategoryDto) {
-    const newCategory = { id: Date.now().toString(), ...createCategoryDto };
-    this.categories.push(newCategory);
+  async create(createCategoryDto: CreateCategoryDto) {
+    const newCategory = await this.prisma.category.create({
+      data: createCategoryDto as any, // assuming DTO maps properly
+    });
+    await this.cacheManager.del('categories_list');
     return newCategory;
   }
 
-  update(id: string, updateCategoryDto: UpdateCategoryDto) {
-    const categoryIndex = this.categories.findIndex(c => c.id === id);
-    if (categoryIndex > -1) {
-      this.categories[categoryIndex] = { ...this.categories[categoryIndex], ...updateCategoryDto };
-      return this.categories[categoryIndex];
-    }
-    return null;
+  async update(id: string, updateCategoryDto: UpdateCategoryDto) {
+    const category = await this.prisma.category.update({
+      where: { id },
+      data: updateCategoryDto as any,
+    });
+    await this.cacheManager.del('categories_list');
+    return category;
   }
 
   findAll() {
-    return this.categories;
+    return this.prisma.category.findMany();
   }
 
   findOne(id: string) {
-    return this.categories.find(c => c.id === id) || null;
+    return this.prisma.category.findUnique({
+      where: { id },
+    });
   }
 
-  remove(id: string) {
-    const categoryIndex = this.categories.findIndex(c => c.id === id);
-    if (categoryIndex > -1) {
-      const deletedCategory = this.categories[categoryIndex];
-      this.categories.splice(categoryIndex, 1);
-      return deletedCategory;
-    }
-    return null;
+  async remove(id: string) {
+    const deletedCategory = await this.prisma.category.delete({
+      where: { id },
+    });
+    await this.cacheManager.del('categories_list');
+    return deletedCategory;
   }
 }

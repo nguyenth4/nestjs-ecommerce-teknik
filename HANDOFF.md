@@ -44,6 +44,13 @@ Tính năng cốt lõi đã được liên kết hoàn chỉnh từ Frontend xu�
 - **Audit Log**: Tự động lưu lịch sử mỗi khi có hành động `CREATE`, `UPDATE`, `DELETE` đối với Product.
 - Database Schema (`schema.prisma`) đã được đồng bộ hoàn thiện với PostgreSQL, tích hợp sẵn file **Seed** để đổ dữ liệu mẫu ban đầu.
 
+### 2.4. Giỏ hàng, Đơn hàng & Hiệu suất (Tuần 3)
+- **Cart API**: Hỗ trợ thêm/sửa/xoá sản phẩm trong giỏ hàng cá nhân.
+- **Order & Inventory Transaction**: Đảm bảo toàn vẹn dữ liệu khi tạo đơn hàng (trừ tồn kho an toàn bằng `reservedQuantity`, lưu thông tin snapshot giá lúc mua).
+- **Payment & Idempotency**: Mô phỏng quá trình thanh toán đi kèm cơ chế Idempotency chống trừ tiền nhiều lần cho cùng một request.
+- **Redis Cache**: Ứng dụng Redis để cache các API lấy danh sách sản phẩm/danh mục nhằm tối ưu tốc độ response.
+- **Background Jobs (BullMQ)**: Xử lý ngầm các tác vụ nặng: Tự động huỷ đơn hàng nếu quá hạn thanh toán (Timeout Job) và Hàng đợi lưu log/thông báo khi trạng thái đơn hàng thay đổi (Notification Queue).
+
 ---
 
 ## 3. Hướng dẫn thiết lập và khởi chạy hệ thống
@@ -99,11 +106,12 @@ Sau khi chạy lệnh `npx prisma db seed`, hệ thống đã có sẵn các tà
 ---
 
 ## 5. Các việc cần làm tiếp theo (Next Steps)
-Hệ thống lõi (Auth, RBAC, Data Modeling) đã hoạt động trơn tru cả 2 đầu Frontend và Backend. Team tiếp nhận có thể tiến hành phát triển tiếp các module:
-1. **Module Giỏ hàng & Thanh toán (Cart & Checkout)**: Kết nối API Orders/Carts từ Backend lên Frontend, tạo giao diện mua sắm và thanh toán (Stripe/PayPal).
+Hệ thống lõi và các luồng API nghiệp vụ (Cart, Order, Payment) đều đã hoàn thiện ở Backend. Team tiếp nhận có thể tiến hành phát triển tiếp các module:
+1. **Frontend Giỏ hàng & Thanh toán**: Kết nối API Orders/Carts từ Backend lên Frontend, tạo giao diện mua sắm và luồng checkout.
 2. **Dashboard UI**: Trang trí và bổ sung các biểu đồ thống kê đơn hàng cho Admin Dashboard.
 3. **Upload Hình ảnh**: Tích hợp Cloudinary hoặc AWS S3 để upload ảnh thật cho sản phẩm.
-4. **Unit Test / E2E Test**: Bổ sung test coverage cho các hàm quan trọng.
+4. **Realtime WebSocket (Tuần 4)**: Cập nhật trạng thái đơn hàng realtime bằng WebSocket.
+5. **Unit Test / E2E Test**: Bổ sung test coverage cho các hàm quan trọng.
 
 ---
 *Bản giao code được biên soạn hoàn thiện, bám sát kiến trúc và thực tế dự án ShopFlow E-commerce.*
