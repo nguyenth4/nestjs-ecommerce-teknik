@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import api from '../../utils/api';
 import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
+import { Trash2 } from 'lucide-react';
 
 interface CartItem {
   id: string;
@@ -22,8 +23,8 @@ export default function Cart() {
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
-  const fetchCart = () => {
-    setLoading(true);
+  const fetchCart = (showLoading = true) => {
+    if (showLoading) setLoading(true);
     api.get('/cart')
       .then(res => {
         setItems(res.data?.data?.items || []);
@@ -41,8 +42,8 @@ export default function Cart() {
 
   const updateQuantity = (itemId: string, newQuantity: number) => {
     if (newQuantity < 1) return;
-    api.patch(`/cart/items/${itemId}`, { quantity: newQuantity })
-      .then(() => fetchCart())
+    api.put(`/cart/items/${itemId}`, { quantity: newQuantity })
+      .then(() => fetchCart(false))
       .catch(err => toast.error(err.response?.data?.message || 'Lỗi cập nhật số lượng'));
   };
 
@@ -50,7 +51,7 @@ export default function Cart() {
     api.delete(`/cart/items/${itemId}`)
       .then(() => {
         toast.success('Đã xoá sản phẩm khỏi giỏ');
-        fetchCart();
+        fetchCart(false);
       })
       .catch(() => toast.error('Lỗi xoá sản phẩm'));
   };
@@ -86,14 +87,14 @@ export default function Cart() {
                     {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(item.product.price)}
                   </p>
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                  <button onClick={() => updateQuantity(item.id, item.quantity - 1)} style={{ padding: '5px 10px', cursor: 'pointer' }}>-</button>
-                  <span>{item.quantity}</span>
-                  <button onClick={() => updateQuantity(item.id, item.quantity + 1)} style={{ padding: '5px 10px', cursor: 'pointer' }}>+</button>
+                <div style={{ display: 'flex', alignItems: 'center', border: '1px solid #ddd', borderRadius: '8px', overflow: 'hidden' }}>
+                  <button onClick={() => updateQuantity(item.id, item.quantity - 1)} style={{ padding: '8px 15px', cursor: 'pointer', background: '#f8f9fa', border: 'none', borderRight: '1px solid #ddd', fontSize: '16px', fontWeight: 'bold', color: '#333' }}>-</button>
+                  <span style={{ padding: '0 20px', fontWeight: '600', minWidth: '20px', textAlign: 'center', fontSize: '15px' }}>{item.quantity}</span>
+                  <button onClick={() => updateQuantity(item.id, item.quantity + 1)} style={{ padding: '8px 15px', cursor: 'pointer', background: '#f8f9fa', border: 'none', borderLeft: '1px solid #ddd', fontSize: '16px', fontWeight: 'bold', color: '#333' }}>+</button>
                 </div>
-                <div>
-                  <button onClick={() => removeItem(item.id)} style={{ color: 'red', border: 'none', background: 'none', cursor: 'pointer', textDecoration: 'underline' }}>
-                    Xoá
+                <div style={{ marginLeft: '10px' }}>
+                  <button onClick={() => removeItem(item.id)} style={{ color: '#ff4d4f', border: 'none', background: '#fff0f0', borderRadius: '50%', width: '40px', height: '40px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }} title="Xoá khỏi giỏ hàng">
+                    <Trash2 size={18} />
                   </button>
                 </div>
               </div>

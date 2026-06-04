@@ -140,9 +140,17 @@ export class OrderService {
       throw new NotFoundException('Không tìm thấy đơn hàng');
     }
 
-    // BR-07: Không cho chuyển trạng thái từ completed về pending
-    if (order.status === OrderStatus.DELIVERED && status === OrderStatus.PENDING) {
-      throw new BadRequestException('Không thể chuyển đơn hàng đã giao về chờ xử lý');
+    // Validate state transitions
+    const validTransitions: Record<string, string[]> = {
+      [OrderStatus.PENDING]: [OrderStatus.PROCESSING, OrderStatus.CANCELLED],
+      [OrderStatus.PROCESSING]: [OrderStatus.SHIPPED, OrderStatus.CANCELLED],
+      [OrderStatus.SHIPPED]: [OrderStatus.DELIVERED],
+      [OrderStatus.DELIVERED]: [],
+      [OrderStatus.CANCELLED]: [],
+    };
+
+    if (order.status !== status && !validTransitions[order.status]?.includes(status)) {
+      throw new BadRequestException(`Không thể chuyển đơn hàng từ trạng thái ${order.status} sang ${status}`);
     }
 
     const updatedOrder = await this.prisma.$transaction(async (tx) => {

@@ -30,6 +30,9 @@ export default function AdminLayout() {
             <NavLink to="/admin/users" className={({ isActive }) => isActive ? "sidebar-item active" : "sidebar-item"}>
               <span className="s-icon">👥</span> Quản lý Người dùng
             </NavLink>
+            <NavLink to="/admin/orders" className={({ isActive }) => isActive ? "sidebar-item active" : "sidebar-item"}>
+              <span className="s-icon">📋</span> Đơn hàng
+            </NavLink>
             <div style={{ marginTop: 'auto', paddingTop: '20px' }}>
               <Link to="/" className="sidebar-item" style={{ color: 'var(--brand)' }}>
                 <span className="s-icon">←</span> Về trang Client

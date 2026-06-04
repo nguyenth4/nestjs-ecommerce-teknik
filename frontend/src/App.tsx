@@ -15,6 +15,7 @@ import Dashboard from './pages/admin/Dashboard';
 import Products from './pages/admin/Products';
 import Categories from './pages/admin/Categories';
 import Users from './pages/admin/Users';
+import AdminOrders from './pages/admin/Orders';
 import Cart from './pages/client/Cart';
 import Checkout from './pages/client/Checkout';
 
@@ -41,6 +42,7 @@ function App() {
           <Route path="products" element={<Products />} />
           <Route path="categories" element={<Categories />} />
           <Route path="users" element={<Users />} />
+          <Route path="orders" element={<AdminOrders />} />
         </Route>
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>

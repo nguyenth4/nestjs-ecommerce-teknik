@@ -61,11 +61,13 @@ Tính năng cốt lõi đã được liên kết hoàn chỉnh từ Frontend xu�
 - **Trang Sản phẩm (Shop)**: Lấy danh sách sản phẩm từ API và hỗ trợ thêm vào giỏ hàng.
 - **Trang Giỏ hàng (Cart)**: Quản lý giỏ hàng (tăng giảm số lượng, xóa) và tự động tính tổng tiền.
 - **Trang Thanh toán (Checkout)**: Thu thập địa chỉ giao hàng, tạo đơn đặt hàng và gọi API thanh toán giả lập.
-- **Trang Lịch sử đơn hàng (Orders)**: Hiển thị các đơn hàng cá nhân, phân loại trạng thái (PENDING, PAID...) và ghi nhận snapshot giá sản phẩm tại thời điểm mua.
+- **Trang Lịch sử đơn hàng (Orders)**: Hiển thị các đơn hàng cá nhân, phân loại trạng thái. Đã tích hợp Socket.IO để cập nhật trạng thái đơn hàng realtime từ Admin (không cần F5) và tự động ẩn các đơn hàng Đã Giao.
+- **UI/UX Giỏ hàng**: Cải thiện giao diện hiển thị mượt mà, fix lỗi nhấp nháy (flicker) khi tải dữ liệu và cải thiện giao diện các nút điều chỉnh số lượng.
 
 ### 2.7. Frontend - Admin Dashboard & Quản lý
 - **Tổng quan (Dashboard)**: Tích hợp API gọi dữ liệu thật, thống kê tổng số lượng đơn hàng và tính toán tổng doanh thu. Hiển thị danh sách 10 đơn hàng gần nhất.
 - **Quản lý Sản phẩm / Danh mục**: Đã thay thế dữ liệu giả lập thành kết nối API hoàn chỉnh, xử lý các thao tác Thêm, Sửa, Xóa thông qua Axios Interceptor (kèm theo hiển thị thông báo lỗi/thành công bằng Toast).
+- **Quản lý Đơn hàng (Orders)**: Giao diện bảng danh sách đơn hàng cho Admin. Quản lý thay đổi trạng thái trực tiếp bằng Dropdown. Tích hợp validation nghiêm ngặt theo State Machine (không cho phép lùi trạng thái hoặc nhảy vọt).
 - **Quản lý Người dùng**: Hiển thị danh sách toàn bộ người dùng và cho phép cấp quyền (Admin/Manager/User) nhanh chóng.
 
 ---
