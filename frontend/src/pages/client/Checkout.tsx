@@ -39,18 +39,31 @@ export default function Checkout() {
     setLoading(true);
     api.post('/order', { shippingAddress: address })
       .then((res) => {
-        const orderId = res.data.data?.id;
+        const orderId = res.data?.data?.id || res.data?.id;
+        console.log('Created Order ID:', orderId);
+        
+        if (!orderId) {
+          throw new Error('Không lấy được ID đơn hàng từ server');
+        }
+
         toast.success('Đã tạo đơn hàng thành công! Vui lòng thanh toán.');
         
         // Tự động gọi API fake payment luôn
-        return api.post('/payment/mock', { orderId });
+        return api.post('/payment/mock', { 
+          orderId: orderId,
+          idempotencyKey: Date.now().toString(),
+          success: true
+        });
       })
       .then(() => {
         toast.success('Thanh toán giả lập thành công!');
         navigate('/orders');
       })
       .catch(err => {
-        toast.error(err.response?.data?.message || 'Lỗi đặt hàng/thanh toán');
+        console.error('Checkout error:', err);
+        const msg = err.response?.data?.message;
+        const errMsg = Array.isArray(msg) ? msg.join(', ') : (msg || 'Lỗi đặt hàng/thanh toán');
+        toast.error(typeof errMsg === 'string' ? errMsg : 'Lỗi không xác định');
       })
       .finally(() => setLoading(false));
   };

@@ -18,6 +18,8 @@ export default function ClientLayout() {
           <ul className="nav-links">
             <li><Link to="/">Trang chủ</Link></li>
             <li><Link to="/shop">Sản phẩm</Link></li>
+            <li><Link to="/about">Về chúng tôi</Link></li>
+            <li><Link to="/contact">Liên hệ</Link></li>
             {user && (
               <>
                 <li><Link to="/cart">Giỏ hàng</Link></li>

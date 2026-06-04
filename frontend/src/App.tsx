@@ -4,6 +4,9 @@ import ClientLayout from './layouts/ClientLayout';
 import AdminLayout from './layouts/AdminLayout';
 import Home from './pages/client/Home';
 import Shop from './pages/client/Shop';
+import ProductDetail from './pages/client/ProductDetail';
+import About from './pages/client/About';
+import Contact from './pages/client/Contact';
 import Orders from './pages/client/Orders';
 import Profile from './pages/client/Profile';
 import Login from './pages/client/Login';
@@ -23,6 +26,9 @@ function App() {
         <Route path="/" element={<ClientLayout />}>
           <Route index element={<Home />} />
           <Route path="shop" element={<Shop />} />
+          <Route path="shop/:id" element={<ProductDetail />} />
+          <Route path="about" element={<About />} />
+          <Route path="contact" element={<Contact />} />
           <Route path="cart" element={<Cart />} />
           <Route path="checkout" element={<Checkout />} />
           <Route path="orders" element={<Orders />} />

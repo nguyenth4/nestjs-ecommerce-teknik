@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import api from '../../utils/api';
 import toast from 'react-hot-toast';
 import { useAuth } from '../../context/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 interface Product {
   id: string;
@@ -15,6 +16,7 @@ interface Product {
 export default function Shop() {
   const [products, setProducts] = useState<Product[]>([]);
   const { token } = useAuth();
+  const navigate = useNavigate();
 
   useEffect(() => {
     api.get('/products')
@@ -28,7 +30,7 @@ export default function Shop() {
       return;
     }
     
-    api.post('/cart', {
+    api.post('/cart/items', {
       productId: product.id,
       quantity: 1
     })
@@ -52,14 +54,18 @@ export default function Shop() {
         <div className="shop-products">
           <div className="product-grid">
             {products.map(p => (
-              <div className="product-card" key={p.id}>
+              <div className="product-card" key={p.id} onClick={(e) => {
+                if (!(e.target as HTMLElement).closest('.add-cart-btn')) {
+                  navigate(`/shop/${p.id}`);
+                }
+              }}>
                 <div className="product-img"><div className="product-img-inner">📦</div></div>
                 <div className="product-info">
                   <div className="product-cat">{p.category?.name || 'Chưa phân loại'}</div>
-                  <div className="product-name">{p.name}</div>
+                  <div className="product-name" style={{ cursor: 'pointer' }}>{p.name}</div>
                   <div className="product-meta">
                     <div className="product-price">{new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(p.price)}</div>
-                    <button className="add-cart-btn" onClick={() => handleAddToCart(p)}>+</button>
+                    <button className="add-cart-btn" onClick={(e) => { e.stopPropagation(); handleAddToCart(p); }}>+</button>
                   </div>
                 </div>
               </div>
